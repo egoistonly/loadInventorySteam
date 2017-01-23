@@ -32,11 +32,11 @@ app.get('/api/loadInventory/:steamid/:appid/:lang', function (req, res) {
         }
     });
     request('http://steamcommunity.com/inventory/' + req.params.steamid + '/' + req.params.appid + '/2?l=' + req.params.lang + '&count=5000', function (error, response) {
-        if (error || response.body == 'null')  return res.send('Error');
+        if (error || response.body == 'null')  return res.send({ 'success' : false, 'error':'steamid is invalid'});
         try {
             JSON.parse(response.body);
         } catch (err) {
-            return res.send('Error: check steamid');
+            return res.send({ 'success' : false, 'error':'steamid is invalid'});
         }
         pricelist = JSON.parse(pricelist);
         var inventory = [];
@@ -63,6 +63,7 @@ app.get('/api/loadInventory/:steamid/:appid/:lang', function (req, res) {
             }
         });
         res.send({
+            'success' : true,
             'steamid': req.params.steamid,
             'lang': req.params.lang,
             'appid': req.params.appid,
