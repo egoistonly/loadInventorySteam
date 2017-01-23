@@ -8,3 +8,5 @@
 Ответ при ошибке: http://pastebin.com/AaTpE2hM
 
 https://github.com/kudo070/loadInventorySteam
+
+#kudo070 #kudo071 #дикий #steam
