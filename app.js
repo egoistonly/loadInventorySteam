@@ -5,6 +5,14 @@ var express = require('express');
 var request = require('request');
 var app = express();
 
+var searchdesc = function(classid, arr) {
+    for (key in arr) {
+        if (classid === arr[key].classid) {
+            return key;
+        }
+    }
+}
+
 
 /* Сайт */
 app.listen(3000, function () {
@@ -42,25 +50,29 @@ app.get('/api/loadInventory/:steamid/:appid/:lang', function (req, res) {
         var inventory = [];
         const items = JSON.parse(response.body);
         items.assets.forEach(function (item, i, arr) {
-           try {
-                var price = 0;
-                if (req.params.appid == 730) price = pricelist[items.descriptions[i]['market_hash_name']];
-                inventory.push({
-                    'assetid': item.assetid,
-                    'price': price,
-                    'classid': item.classid,
-                    'instanceid': item.instanceid,
-                    'contextid': item.contextid,
-                    'type': items.descriptions[i]['type'],
-                    'name': items.descriptions[i]['name'],
-                    'market_hash_name': items.descriptions[i]['market_hash_name'],
-                    'market_name': items.descriptions[i]['market_name'],
-                    'image': 'https://steamcommunity-a.akamaihd.net/economy/image/class/' + req.params.appid + '/' + item.classid + '/',
-                    'icon_url': items.descriptions[i]['icon_url'],
-                });
-            } catch (err) {
-               //console.log(err);
+           var id = helpers.searchdesc(item.classid, items.descriptions);
+
+            var color;
+            for (var key in items.descriptions[id]['tags']) {
+                if (items.descriptions[id]['tags'][key].category == "Rarity") {
+                    color = items.descriptions[id]['tags'][key].color;
+                }
             }
+            inventory.push({
+                'assetid': item.assetid,
+                'price': pricelist[items.descriptions[id]['market_hash_name']],
+                'classid': item.classid,
+                'instanceid': item.instanceid,
+                'contextid': item.contextid,
+                'tradable': items.descriptions[id]['tradable'],
+                'type': items.descriptions[id]['type'],
+                'name': items.descriptions[id]['name'],
+                'market_hash_name': items.descriptions[id]['market_hash_name'],
+                'market_name': items.descriptions[id]['market_name'],
+                'image': 'https://steamcommunity-a.akamaihd.net/economy/image/class/' + config.appid + '/' + item.classid + '/',
+                'icon_url': items.descriptions[id]['icon_url'],
+                'color': color
+            });
         });
         res.send({
             'success' : true,
