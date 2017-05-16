@@ -5,7 +5,7 @@ var express = require('express');
 var request = require('request');
 var app = express();
 
-var searchdesc = function(classid, arr) {
+var searchdesc = (classid, arr) => {
     for (key in arr) {
         if (classid === arr[key].classid) {
             return key;
@@ -15,20 +15,20 @@ var searchdesc = function(classid, arr) {
 
 
 /* Сайт */
-app.listen(3000, function () {
+app.listen(3000,  () => {
     console.log('Запустили!');
 });
 //sudo fuser -k 3000/tcp
-app.get('/', function (req, res) {
+app.get('/', (req, res) =>  {
     res.send('Для загрузки инвентаря -  /api/loadInventory/steamid/appid/lang</br>Пример :<a href="http://ezyskins.ru/api/loadInventory/76561198316116397/730/russian">http://ezyskins.ru/api/loadInventory/76561198316116397/730/russian</a>');
 });
 
 
-app.get('/api/loadInventory/:steamid/:appid/:lang', function (req, res) {
+app.get('/api/loadInventory/:steamid/:appid/:lang', (req, res) =>  {
     var pricelist = [];
     client.get('csgofast', function (err, value) {
         if (err || value == null) {
-            request('https://api.csgofast.com/price/all', function (error, response) {
+            request('https://api.csgofast.com/price/all', (error, response) => {
                 if (!error) {
                     client.set('csgofast', JSON.stringify(response.body), redis.print);
                     client.expireat('csgofast', parseInt((+new Date)/1000) + 86400);
@@ -39,7 +39,7 @@ app.get('/api/loadInventory/:steamid/:appid/:lang', function (req, res) {
             pricelist.push(JSON.parse(value));
         }
     });
-    request('http://steamcommunity.com/inventory/' + req.params.steamid + '/' + req.params.appid + '/2?l=' + req.params.lang + '&count=5000', function (error, response) {
+    request('http://steamcommunity.com/inventory/' + req.params.steamid + '/' + req.params.appid + '/2?l=' + req.params.lang + '&count=5000', (error, response) => {
         if (error || response.body == 'null')  return res.send({ 'success' : false, 'error':'steamid is invalid'});
         try {
             JSON.parse(response.body);
@@ -49,8 +49,8 @@ app.get('/api/loadInventory/:steamid/:appid/:lang', function (req, res) {
         pricelist = JSON.parse(pricelist);
         var inventory = [];
         const items = JSON.parse(response.body);
-        items.assets.forEach(function (item, i, arr) {
-           var id = helpers.searchdesc(item.classid, items.descriptions);
+        items.assets.forEach((item, i, arr) => {
+           var id = searchdesc(item.classid, items.descriptions);
 
             var color;
             for (var key in items.descriptions[id]['tags']) {
